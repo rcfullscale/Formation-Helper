@@ -1,38 +1,29 @@
 -- wake_toggle.lua for FlyWithLua
--- Toggle wake turbulence override and show menu status
+-- Toggles wake turbulence on/off with menu and shows red text when disabled
 
--- Get the dataref (1 = override = wake OFF, 0 = no override = wake ON)
+-- DataRef: 1 = override ON = wake turbulence OFF, 0 = normal wake ON
 wake_override = dataref("wake_override", "sim/operation/override/override_wake_turbulence", "writable")
 
--- Internal state
-wake_enabled = (wake_override == 0)
-
--- Function to toggle
+-- Toggle wake turbulence function
 function toggle_wake()
     if wake_override == 0 then
         wake_override = 1
-        wake_enabled = false
-        logMsg("[WakeToggle] Wake turbulence disabled.")
+        logMsg("[WakeToggle] Wake turbulence DISABLED.")
     else
         wake_override = 0
-        wake_enabled = true
-        logMsg("[WakeToggle] Wake turbulence enabled.")
+        logMsg("[WakeToggle] Wake turbulence ENABLED.")
     end
 end
 
--- Function to return status string
-function wake_status()
-    return wake_enabled and "Wake: ON" or "Wake: OFF"
-end
-
--- Macro with dynamic title
-do_every_frame([[
-    if wake_override == 0 then
-        wake_enabled = true
-    else
-        wake_enabled = false
-    end
-]])
-
-add_macro("Wake: OFF", "toggle_wake()", "", "activate")
+-- Add macros for toggling with dynamic status
 add_macro("Wake: ON", "toggle_wake()", "", "deactivate")
+add_macro("Wake: OFF", "toggle_wake()", "", "activate")
+
+-- Draw red warning text in bottom-left when wake turbulence is disabled
+function draw_wake_status()
+    if wake_override == 1 then
+        draw_string_Helvetica_18(10, 20, "Wake Turbulence OFF", 1.0, 0.0, 0.0)  -- red text
+    end
+end
+
+do_every_draw("draw_wake_status()")
